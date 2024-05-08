@@ -1,11 +1,14 @@
 package com.mailer.controller;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,16 +28,20 @@ public class MailerController {
 	@Autowired
     private EmailService emailService;
 	
+	@SuppressWarnings("unchecked")
 	@PostMapping("/sendEmail")
-	public ResponseEntity<Map<String,String>> sendEmail(@RequestBody Map<String,String> requestMap) {
+	public ResponseEntity<Map<String,String>> sendEmail(@RequestBody Map<String,Object> requestMap){
 		Map<String,String> responseMap = new HashMap<>();
-		boolean hasAttachment = false;
-    	if(requestMap.get("attachmentUrl")!=null&&requestMap.get("attachmentUrl").length()>0){
-			hasAttachment=true;
+		List<String> attachments = (List<String>)requestMap.get("attachments");
+		List<String> emailIds = (List<String>)requestMap.get("emailIds");
+		MimeMessage[] message=null;
+		try {
+			message = emailService.createMessage(emailIds,String.valueOf(requestMap.get("subject")),String.valueOf(requestMap.get("body")),attachments);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		Object message = emailService.createMessage(requestMap.get("emailId"),requestMap.get("subject"),requestMap.get("body"),requestMap.get("attachmentUrl"), hasAttachment);
 	    try {
-	    	emailService.sendEmail(message,hasAttachment);
+	    	emailService.sendEmail(message);
 			responseMap.put("status", "success");
 		    responseMap.put("message", "Mail Sended Successfully.");
 		} catch (Exception e) {
@@ -44,24 +51,6 @@ public class MailerController {
 		}
 	    
 	    return new ResponseEntity<Map<String,String>>(responseMap,HttpStatus.OK);
-	}
-	
-	@PostMapping("/sendBulkEmail")
-	public ResponseEntity<Map<String, String>> sendBulkEmail(@RequestBody Map<String, String> requestMap) {
-	    Map<String, String> responseMap = new HashMap<>();
-	    List<String> emailIds = Arrays.asList(requestMap.get("EmailIds").split(","));
-	    SimpleMailMessage[] messages = emailIds.stream()
-	            .map(recipient -> emailService.createSimpleMessage(recipient, requestMap.get("Subject"), requestMap.get("Body")))
-	            .toArray(SimpleMailMessage[]::new);
-	    try {
-			emailService.sendBulkEmail(messages);
-			responseMap.put("status", "success");
-		    responseMap.put("message", "Mail Sended Successfully.");
-		} catch (Exception e) {
-			responseMap.put("status", "error");
-		    responseMap.put("message", e.getStackTrace().toString());
-		}
-	    return ResponseEntity.ok(responseMap);
 	}
 
 	
