@@ -37,6 +37,9 @@ public class MailerController {
 		List<String> emailIds = requestMap.get("emailIds")!=null?(List<String>)requestMap.get("emailIds"):new ArrayList<String>();
 		String subject = requestMap.get("subject")!=null?(String)requestMap.get("subject"):"";
 		String body = requestMap.get("body")!=null?(String)requestMap.get("body"):"";
+		if(requestMap.get("emailId")!=null&&requestMap.get("emailId")!="") {
+			emailIds.add((String)requestMap.get("emailId"));
+		}
 		MimeMessage[] message=null;
 		if(emailIds.size()>0) {
 			try {
