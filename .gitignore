@@ -1,0 +1,6 @@
+# Ignore target directory
+target/
+.settings/
+WebContent/
+.project
+.classpath
