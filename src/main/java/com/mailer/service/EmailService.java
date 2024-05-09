@@ -37,25 +37,27 @@ public class EmailService {
                 e.printStackTrace();
             }
             StringBuilder modifiedBody = new StringBuilder(body);
-            attachments.stream().forEach(attachment -> {
-                UrlResource attachmentResource = null;
-                try {
-                    attachmentResource = new UrlResource(new URL(attachment));
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
-                String extension = getFileExtensionFromUrlResource(attachmentResource);
-                if (extension.isEmpty()) {
-                    modifiedBody.append("\n").append(attachment);
-                } else {
-                    String attachmentFileName = attachmentResource.getFilename().toString();
-                    try {
-                        helper[0].addAttachment(attachmentFileName, attachmentResource);
-                    } catch (MessagingException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
+            if(attachments.size()>0) {
+            	attachments.stream().forEach(attachment -> {
+            		UrlResource attachmentResource = null;
+            		try {
+            			attachmentResource = new UrlResource(new URL(attachment));
+            		} catch (MalformedURLException e) {
+            			e.printStackTrace();
+            		}
+            		String extension = getFileExtensionFromUrlResource(attachmentResource);
+            		if (extension.isEmpty()) {
+            			modifiedBody.append("\n").append(attachment);
+            		} else {
+            			String attachmentFileName = attachmentResource.getFilename().toString();
+            			try {
+            				helper[0].addAttachment(attachmentFileName, attachmentResource);
+            			} catch (MessagingException e) {
+            				e.printStackTrace();
+            			}
+            		}
+            	});
+            }
             try {
                 helper[0].setText(modifiedBody.toString());
             } catch (MessagingException e) {
