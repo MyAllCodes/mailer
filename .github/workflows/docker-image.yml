@@ -1,0 +1,5 @@
+services:
+  mailer:
+    image: gauravyadav3590/mailer:latest
+    ports:
+      - "8050:8050"
